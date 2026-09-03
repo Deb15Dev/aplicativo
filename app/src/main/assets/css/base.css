@@ -1,0 +1,68 @@
+:root {
+  --background: #ffffff;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --title: #1e3a8a;
+  --purple: #7c3aed;
+  --text: #1e1b4b;
+  --muted: #64748b;
+  --border: #d6d9f5;
+  --soft: #ede9fe;
+  --keyboard: #4f46e5;
+  --keyboard-shadow: #312e81;
+  --danger: #e11d48;
+  --danger-dark: #9f1239;
+  --success: #22c55e;
+  --locked: #f1f5f9;
+  --shadow: 0 4px 12px rgba(30, 58, 138, 0.12);
+}
+
+:root[data-theme='dark'] {
+  --background: #0f172a;
+  --card: #1e293b;
+  --primary: #818cf8;
+  --title: #ffffff;
+  --purple: #a78bfa;
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --border: #334155;
+  --soft: #312e81;
+  --keyboard: #4f46e5;
+  --keyboard-shadow: #312e81;
+  --danger: #f43f5e;
+  --danger-dark: #be123c;
+  --success: #4ade80;
+  --locked: #111827;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+* { box-sizing: border-box; }
+html, body { width: 100%; min-height: 100%; margin: 0; }
+body {
+  min-height: 100dvh;
+  background: #eef3ff;
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; }
+button:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+img { display: block; max-width: 100%; }
+.app-shell { position: relative; width: 100%; min-height: 100dvh; background: var(--background); overflow: hidden; }
+.app-main { position: relative; z-index: 1; width: 100%; min-height: 100dvh; }
+.decoracao-fundo { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: .95; }
+.blob { position: absolute; border-radius: 50%; background: #d7dcf8; }
+.blob-top-left { width: 180px; height: 180px; top: -60px; left: -60px; }
+.blob-top-right { width: 220px; height: 220px; top: -100px; right: -80px; }
+.blob-bottom-left { width: 160px; height: 160px; bottom: -40px; left: -40px; background: #dccff8; }
+.decor-text { position: absolute; color: #c5cae9; font-weight: 700; }
+.code { top: 190px; left: 30px; font-size: 32px; }
+.braces { top: 140px; right: 30px; font-size: 32px; }
+.binary { top: 210px; right: 40px; font-size: 18px; line-height: 24px; }
+:root[data-theme='dark'] .decoracao-fundo { opacity: .25; }
+
+@media (min-width: 560px) {
+  body { display: grid; place-items: center; padding: 20px; }
+  .app-shell { width: min(450px, 100%); min-height: min(920px, calc(100dvh - 40px)); height: min(920px, calc(100dvh - 40px)); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 20px 50px rgba(30, 58, 138, .15); }
+  .app-main { min-height: 100%; height: 100%; }
+}

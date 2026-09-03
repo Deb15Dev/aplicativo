@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1e3a8a" />
+    <title>TechCross</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <audio id="musica-fundo" loop preload="auto"><source src="assets/musicas/sound_background.mp3" type="audio/mpeg" /></audio>
+      <audio id="sfx-correct" preload="auto" src="assets/musicas/correct.mp3"></audio>
+      <div class="decoracao-fundo" aria-hidden="true">
+        <span class="blob blob-top-left"></span><span class="blob blob-top-right"></span><span class="blob blob-bottom-left"></span>
+        <span class="decor-text code">&lt;/&gt;</span><span class="decor-text braces">{ }</span><span class="decor-text binary">101<br />010<br />101</span>
+      </div>
+      <main class="app-main">
+        <section id="home-screen" class="screen active" aria-label="Tela inicial">
+          <div class="content-home">
+            <img id="logo-home" class="logo" src="assets/imagens/logo-techcross.png" alt="Logo TechCross" />
+            <div class="title-wrap"><h1 class="title">TechCross</h1><div class="divider" aria-hidden="true"></div><p class="subtitle">PALAVRAS CRUZADAS<br />DE TECNOLOGIA</p></div>
+            <nav class="menu-home" aria-label="Menu principal">
+              <button id="btn-jogar" class="btn btn-primary" type="button"><span class="play-icon" aria-hidden="true">▶</span> JOGAR</button>
+              <button class="btn btn-secondary" type="button" data-target="categories-screen">CATEGORIAS</button>
+              <button class="btn btn-secondary" type="button" data-target="settings-screen">CONFIGURAÇÕES</button>
+              <button class="btn btn-secondary" type="button" data-target="sobre-screen">SOBRE</button>
+            </nav>
+          </div>
+        </section>
+        <section id="categories-screen" class="screen" aria-label="Tela de categorias">
+          <div class="page-header"><div class="header-actions">
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Ir para a tela inicial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5h-5.4v-6.5H8.9V21H3.5a.5.5 0 0 1-.5-.5z" /></svg></button>
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Voltar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H8l5-5-1.4-1.4L4.2 12l7.4 7.4L13 18l-5-5h12z" /></svg></button>
+          </div><h2>Categorias</h2></div>
+          <div id="lista-categorias" class="lista-categorias" aria-live="polite"></div>
+        </section>
+        <section id="levels-screen" class="screen" aria-label="Tela de fases">
+          <div class="page-header"><div class="header-actions">
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Ir para a tela inicial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5h-5.4v-6.5H8.9V21H3.5a.5.5 0 0 1-.5-.5z" /></svg></button>
+            <button class="icon-button" type="button" data-target="categories-screen" aria-label="Voltar para categorias"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H8l5-5-1.4-1.4L4.2 12l7.4 7.4L13 18l-5-5h12z" /></svg></button>
+          </div><h2 id="levels-screen-title">Fases</h2></div>
+          <div id="lista-fases" class="lista-fases" aria-live="polite"></div>
+        </section>
+        <section id="settings-screen" class="screen" aria-label="Tela de configurações">
+          <div class="page-header"><div class="header-actions">
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Ir para a tela inicial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5h-5.4v-6.5H8.9V21H3.5a.5.5 0 0 1-.5-.5z" /></svg></button>
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Voltar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H8l5-5-1.4-1.4L4.2 12l7.4 7.4L13 18l-5-5h12z" /></svg></button>
+          </div><h2>CONFIGURAÇÕES</h2></div>
+          <div class="settings-wrap">
+            <article class="settings-card settings-row"><h3>MÚSICA</h3><button id="btn-musica" class="toggle-btn active" type="button" aria-label="Alternar música" aria-pressed="true"><span class="toggle-knob"><span class="music-on" aria-hidden="true">♫</span><span class="music-off" aria-hidden="true">×</span></span></button></article>
+            <article class="settings-card"><h3>DIFICULDADE</h3><p>Escolha o nível de desafio do jogo.</p><div class="difficulty-list" role="group" aria-label="Selecionar dificuldade"><button class="difficulty-btn active" type="button" data-difficulty="facil">FÁCIL</button><button class="difficulty-btn" type="button" data-difficulty="medio">MÉDIO</button><button class="difficulty-btn" type="button" data-difficulty="dificil">DIFÍCIL</button></div></article>
+            <article class="settings-card settings-row"><h3>TEMA</h3><button id="btn-tema" class="toggle-btn" type="button" aria-label="Alternar tema" aria-pressed="false"><span class="toggle-knob"><span class="theme-light" aria-hidden="true">☀</span><span class="theme-dark" aria-hidden="true">☾</span></span></button></article>
+          </div>
+        </section>
+        <section id="sobre-screen" class="screen" aria-label="Tela sobre">
+          <div class="page-header"><div class="header-actions">
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Ir para a tela inicial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5h-5.4v-6.5H8.9V21H3.5a.5.5 0 0 1-.5-.5z" /></svg></button>
+            <button class="icon-button" type="button" data-target="home-screen" aria-label="Voltar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H8l5-5-1.4-1.4L4.2 12l7.4 7.4L13 18l-5-5h12z" /></svg></button>
+          </div><h2>SOBRE</h2></div>
+          <div class="about-content"><img id="logo-about" class="about-logo" src="assets/imagens/logo-techcross.png" alt="Logo TechCross" /><h3 class="about-title">TechCross</h3><p class="about-subtitle">PALAVRAS CRUZADAS<br />DE TECNOLOGIA</p><div id="sobre-cards" class="about-cards"></div><footer class="about-footer"><strong>☆ Obrigado por jogar!</strong><span>Divirta-se, desafie-se e continue aprendendo.</span><strong>Desenvolvido por Débora</strong></footer></div>
+        </section>
+        <section id="game-screen" class="screen game-screen" aria-label="Tela de jogo">
+          <div class="game-top-bar"><div id="header-game-left" class="header-actions"></div><h2 id="game-level-id">Level 1</h2><div id="btn-ajuda-container"></div></div>
+          <h3 id="game-level-title" class="game-title"></h3><p id="game-level-status" class="game-status"></p>
+          <div class="game-content"><div id="area-palavras-jogo" class="area-resposta-scroll" aria-live="polite"></div><div class="bloco-inferior-fixo"><div class="area-dica"><button id="btn-dica-prev" class="btn-seta" type="button" aria-label="Dica anterior">‹</button><div class="caixa-texto-dica"><span>DICA</span><p id="texto-dica-atual"></p></div><button id="btn-dica-next" class="btn-seta" type="button" aria-label="Próxima dica">›</button></div><div id="teclado-container" class="teclado" aria-label="Teclado virtual"></div></div></div>
+        </section>
+      </main>
+    </div>
+    <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div id="modal-content" class="modal-base"><div id="modal-icon" class="icone-modal" aria-hidden="true"></div><h3 id="modal-title"></h3><p id="modal-text"></p><button id="btn-modal-main" class="btn-modal-primary" type="button"></button><button id="btn-modal-back" class="btn-modal-secondary" type="button">VOLTAR ÀS FASES</button></div></div>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
