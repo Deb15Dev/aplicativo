@@ -1,21 +1,42 @@
 .screen { position: absolute; inset: 0; z-index: 1; display: none; flex-direction: column; overflow-y: auto; padding: max(28px, env(safe-area-inset-top)) 18px max(28px, env(safe-area-inset-bottom)); }
 .screen.active { display: flex; }
 .content-home { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 24px; }
-.logo { width: 170px; height: 170px; margin-bottom: 8px; object-fit: contain; }
+.logo { width: 195px; height: 195px;  object-fit: contain; }
 .title-wrap { margin-bottom: 24px; text-align: center; }
-.title { margin: 0; color: var(--title); font-size: 42px; letter-spacing: 1px; }
 .title { margin: 0; color: var(--title); font-size: 36px; letter-spacing: 1px; }
 .divider { width: 60px; height: 3px; margin: 14px auto; border-radius: 6px; background: var(--primary); }
-.subtitle { margin: 0; color: var(--primary); font-size: 18px; font-weight: 700; line-height: 26px; letter-spacing: 1px; }
+.subtitle { margin: 0; color: var(--primary); font-size: 20px; font-weight: 700; line-height: 26px; letter-spacing: 1px; }
 .menu-home { width: 100%; display: flex; flex-direction: column; align-items: center; }
 
-.page-header { position: relative; min-height: 84px; margin-bottom: 16px; display: grid; place-items: center; }
-.page-header h2 { max-width: 70%; margin: 0; color: var(--title); font-size: 25px; text-align: center; }
-.header-actions { display: flex; gap: 10px; align-items: center; }
-.page-header .header-actions { position: absolute; left: 0; top: 0; }
-.lista-fases { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 2px 20px; }
-.lista-categorias { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 2px 20px; }
-.settings-wrap { width: 100%; max-width: 500px; margin: 0 auto; }
+/* --- NOVA ESTRUTURA DO CABEÇALHO --- */
+.page-header { 
+    display: grid; 
+    /* Cria as 3 colunas: 100px pra botões, 1fr (livre) pro título, 100px de área morta pra simetria */
+    grid-template-columns: 100px 1fr 100px; 
+    align-items: center; 
+    min-height: 84px; 
+    padding: 0 16px;
+}
+
+.page-header h2 {
+    margin: 0;
+    color: var(--title);
+    font-size: 26px;
+    text-align: center;
+    justify-self: center;
+    grid-column: 2;
+}
+
+.header-actions { 
+    display: flex; 
+    gap: 10px; 
+    align-items: center; 
+}
+
+
+.lista-fases { width: 100%; max-width: 600px; margin: 15px 0px 0px 0px; padding: 0 2px 20px; }
+.lista-categorias { width: 100%; max-width: 600px; margin: 15px 0px 0px 0px; padding: 0 2px 20px; }
+.settings-wrap { width: 100%; max-width: 500px; margin: 15px 0px 0px 0px; }
 
 .about-content { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 16px; }
 .about-logo { width: 180px; height: 180px; margin: 0 auto; object-fit: contain; }
@@ -31,8 +52,8 @@
 .about-footer span { color: var(--primary); }
 
 .game-screen { overflow: hidden; }
-.game-top-bar { min-height: 52px; display: grid; grid-template-columns: 110px minmax(0, 1fr) 70px; align-items: center; }
-.game-top-bar h2 { margin: 0; color: var(--title); font-size: 24px; text-align: center; }
+.game-top-bar {min-height: 52px; display: grid;grid-template-columns: 110px minmax(0, 1fr) 110px; align-items: center; }
+.game-top-bar h2 { margin: 0; color: var(--title); font-size: 26px; text-align: center; }
 .game-title { margin: 6px 0 12px; padding: 0 24px; color: var(--title); font-size: 22px; line-height: 1.1; text-align: center; }
 .game-status { margin: 0 0 4px; color: var(--purple); font-size: 16px; font-weight: 900; text-align: center; }
 .game-content { min-height: 0; flex: 1; display: flex; flex-direction: column; align-items: center; width: 100%; }
@@ -44,11 +65,27 @@
 .caixa-texto-dica span { color: var(--purple); font-size: 16px; font-weight: 900; letter-spacing: 1px; }
 .caixa-texto-dica p { margin: 6px 0 0; color: var(--text); font-size: 16px; font-weight: 700; line-height: 20px; }
 .teclado { width: 100%; padding-bottom: 2px; }
-
+/* 1. Ajustes para telas com pouca altura (celulares pequenos ou na horizontal) */
 @media (max-height: 680px) {
   .content-home { justify-content: flex-start; overflow-y: auto; padding-top: 10px; }
-  .logo { width: 130px; height: 130px; }
+  .logo { width: 130px; height: 130px; } /* Diminui o logo para caber melhor */
   .title-wrap { margin-bottom: 14px; }
   .game-title { font-size: 20px; margin-bottom: 7px; }
   .area-dica { min-height: 70px; }
+}
+
+/* 2. Ajustes para telas estreitas (maioria dos smartphones) */
+@media (max-width: 420px) {
+  /* Reduzimos as colunas laterais de 100px para 85px para dar mais espaço ao título longo */
+  .page-header { 
+      grid-template-columns: 85px 1fr 85px; 
+      padding: 0 8px; 
+  }
+  
+  /* Retiramos o padding antigo que esmagava o texto e apenas reduzimos a fonte */
+  .page-header h2 { 
+      padding: 0; 
+      font-size: 20px; 
+      -webkit-line-clamp: 2; /* Continua permitindo até 2 linhas de texto */
+  }
 }

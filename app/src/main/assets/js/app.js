@@ -3,13 +3,11 @@ import { ABOUT_CARDS } from './data/sobre.js';
 import { renderGameHeader as renderHeaderComponent } from './componentes/HeaderTela.js';
 import { renderKeyboard as renderKeyboardComponent } from './componentes/TecladoVirtual.js';
 import { renderWordList } from './componentes/Palavras.js';
-import { renderHelpButton } from './componentes/AjudaRevelarLetra.js';
 import { renderCategoryList } from './componentes/Categorias.js';
-import { fireConfetti, fireSparkles, showHappyRobotAt } from './componentes/animations.js';
+import { fireConfetti } from './componentes/animations.js';
 
 const STORAGE_KEY = 'techcross-web-state-v1';
 const MAX_ERRORS = { facil: 5, medio: 4, dificil: 3 };
-const HELP_COUNT = { facil: 2, medio: 3, dificil: 4 };
 const defaultState = () => ({
   musicOn: true,
   darkMode: false,
@@ -22,7 +20,6 @@ const defaultState = () => ({
   selectedLetterIndex: null,
   answers: {},
   revealed: {},
-  helpUsed: {},
   errors: 0,
   invalidWord: null,
   locked: false,
@@ -190,7 +187,6 @@ function saveSession() {
   state.sessions[`${state.activeCategoryId}-${state.currentLevel.id}`] = {
     answers: cloneData(state.answers),
     revealed: cloneData(state.revealed),
-    helpUsed: { ...state.helpUsed },
     errors: state.errors,
   };
 }
@@ -200,7 +196,6 @@ function openLevel(level) {
   state.currentLevel = level;
   state.answers = saved ? cloneData(saved.answers) : {};
   state.revealed = saved ? cloneData(saved.revealed) : {};
-  state.helpUsed = saved ? { ...saved.helpUsed } : {};
   state.errors = saved?.errors || 0;
   state.invalidWord = null;
   state.locked = false;
@@ -227,7 +222,6 @@ function renderGame() {
   document.getElementById('game-level-status').textContent = `${state.difficulty.toUpperCase()} · ERROS ${state.errors}/${MAX_ERRORS[state.difficulty]}`;
   document.getElementById('texto-dica-atual').textContent = selected?.hint || '';
   renderGameHeader();
-  renderHelp();
   renderWords();
   renderKeyboard();
 }
@@ -261,20 +255,6 @@ function renderKeyboard() {
     locked: state.locked,
     onType: typeLetter,
     onErase: eraseLetter,
-  });
-}
-
-function renderHelp() {
-  const container = document.getElementById('btn-ajuda-container');
-  const word = state.selectedWord;
-  const used = word ? Boolean(state.helpUsed[word.answer]) : false;
-  renderHelpButton(container, {
-    word,
-    difficulty: state.difficulty,
-    used,
-    locked: state.locked,
-    completed: word ? wordComplete(word) : false,
-    onReveal: revealLetters,
   });
 }
 
@@ -317,19 +297,11 @@ function eraseLetter() {
 
 function evaluateWord(word) {
   if (wordComplete(word)) {
-    // celebration for correct word: confetti from the word position
-    try {
-      const row = document.querySelector(`[data-answer="${word.answer}"]`);
-      if (row) fireSparkles(row, { count: 18 });
-      else fireSparkles(null, { count: 18 });
-    } catch (_) {}
-    try {
-      const row = document.querySelector(`[data-answer="${word.answer}"]`);
-      if (row) showHappyRobotAt(row);
-    } catch (_) {}
+    const row = document.querySelector(`[data-answer="${word.answer}"]`);
+    fireConfetti(row);
     const allCompleted = state.currentLevel.words.every((item) => wordComplete(item));
     if (allCompleted) completeLevel();
-    else selectNextUnfinished();
+    else revealLettersForNextWord(selectNextUnfinished());
     return;
   }
   state.errors += 1;
@@ -357,27 +329,24 @@ function selectNextUnfinished(direction = 1) {
     if (!wordComplete(words[index])) {
       state.selectedWord = words[index];
       state.selectedLetterIndex = null;
-      return;
+      return words[index];
     }
   }
 }
 
-function revealLetters() {
-  const word = state.selectedWord;
-  if (!word || state.helpUsed[word.answer] || state.locked) return;
+function revealLettersForNextWord(word) {
+  if (!word) return;
   const answer = answerArray(word);
   const empty = answer.map((item, index) => item ? null : index).filter((index) => index !== null);
   for (let index = empty.length - 1; index > 0; index -= 1) {
     const other = Math.floor(Math.random() * (index + 1));
     [empty[index], empty[other]] = [empty[other], empty[index]];
   }
-  const chosen = empty.slice(0, Math.min(HELP_COUNT[state.difficulty], empty.length));
+  const amount = word.answer.length <= 4 ? 1 : word.answer.length <= 7 ? 2 : 3;
+  const chosen = empty.slice(0, Math.min(amount, empty.length));
   chosen.forEach((index) => { answer[index] = word.answer[index]; });
   state.answers[word.answer] = answer;
   state.revealed[word.answer] = [...new Set([...(state.revealed[word.answer] || []), ...chosen])];
-  state.helpUsed[word.answer] = true;
-  if (wordComplete(word)) evaluateWord(word);
-  renderGame();
 }
 
 function completeLevel() {
@@ -399,7 +368,6 @@ function resetEntireGame() {
   state.sessions = fresh.sessions;
   state.answers = fresh.answers;
   state.revealed = fresh.revealed;
-  state.helpUsed = fresh.helpUsed;
   state.errors = 0;
   state.invalidWord = null;
   state.locked = false;

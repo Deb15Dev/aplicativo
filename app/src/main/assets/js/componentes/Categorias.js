@@ -10,7 +10,7 @@ export function renderCategoryList(container, { categories, activeCategoryId, ge
     card.className = `category-card${category.id === activeCategoryId ? ' selected' : ''}`;
     card.setAttribute('aria-label', `Selecionar categoria ${category.title}`);
     card.innerHTML = `
-      <span class="category-icon" aria-hidden="true">${category.icon}</span>
+      <span class="category-icon" aria-hidden="true"><i class="${category.icon}"></i></span>
       <span class="category-info"><strong>${category.title}</strong><small>${category.description}</small></span>
       <span class="category-progress">${completed}/${playableLevels.length}<small>fases</small></span>`;
     card.addEventListener('click', () => onSelect(category));

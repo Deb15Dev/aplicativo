@@ -1,141 +1,89 @@
-const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = () => (
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+);
 
-export function animateRobot(el) {
-  if (!el || REDUCED) return;
-  el.classList.add('robot-animate');
-  window.setTimeout(() => el.classList.remove('robot-animate'), 700);
+function playCorrectSound() {
+  const sound = document.getElementById('sfx-correct');
+  if (sound?.src) {
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+    return;
+  }
+
+  // Pequeno "ping" de confirmação, sem depender de um arquivo de áudio.
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(660, context.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(880, context.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.18);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.2);
+    oscillator.addEventListener('ended', () => context.close());
+  } catch (_) {
+    // O efeito é opcional; falhas de áudio não devem interromper o jogo.
+  }
 }
 
-function createCanvas() {
+export function fireConfetti(target) {
+  playCorrectSound();
+  if (prefersReducedMotion()) return;
+
   const canvas = document.createElement('canvas');
   canvas.className = 'confetti-canvas';
-  canvas.style.position = 'fixed';
-  canvas.style.left = '0';
-  canvas.style.top = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.pointerEvents = 'none';
-  canvas.style.zIndex = 9999;
-  return canvas;
-}
-
-function random(min, max) { return Math.random() * (max - min) + min; }
-
-export function fireConfetti(targetEl, { count = 24, spread = 45 } = {}) {
-  if (REDUCED) return;
-  const canvas = createCanvas();
   document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  ctx.scale(dpr, dpr);
 
-  const rect = targetEl ? targetEl.getBoundingClientRect() : { x: window.innerWidth / 2, y: window.innerHeight / 3, width: 0, height: 0 };
-  const originX = rect.left + rect.width / 2;
-  const originY = rect.top + rect.height / 2;
+  const context = canvas.getContext('2d');
+  const pixelRatio = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * pixelRatio;
+  canvas.height = window.innerHeight * pixelRatio;
+  context.scale(pixelRatio, pixelRatio);
 
-  const colors = ['#7c3aed','#a78bfa','#6d28d9','#8b5cf6','#c4b5fd','#6b21a8'];
-  const pieces = [];
-  for (let i = 0; i < count; i += 1) {
-    pieces.push({
+  const rect = target?.getBoundingClientRect();
+  const originX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+  const originY = rect ? rect.top + rect.height / 2 : window.innerHeight / 3;
+  const colors = ['#7c3aed', '#a855f7', '#ec4899', '#f59e0b', '#22c55e', '#38bdf8'];
+  const pieces = Array.from({ length: 28 }, (_, index) => {
+    const angle = (-90 + (Math.random() - 0.5) * 100) * (Math.PI / 180);
+    const speed = 3 + Math.random() * 4;
+    return {
       x: originX,
       y: originY,
-      vx: Math.cos((random(-spread, spread) * Math.PI) / 180) * random(2, 6),
-      vy: Math.sin((random(-spread, spread) * Math.PI) / 180) * random(-8, -3),
-      size: random(6, 12),
-      color: colors[i % colors.length],
-      rot: random(0, Math.PI * 2),
-      vr: random(-0.2, 0.2),
-      life: 0,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: 5 + Math.random() * 5,
+      color: colors[index % colors.length],
+      rotation: Math.random() * Math.PI,
+      spin: (Math.random() - 0.5) * 0.3,
+    };
+  });
+
+  const startedAt = performance.now();
+  const draw = (now) => {
+    const elapsed = now - startedAt;
+    context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    pieces.forEach((piece) => {
+      piece.vy += 0.16;
+      piece.x += piece.vx;
+      piece.y += piece.vy;
+      piece.rotation += piece.spin;
+      context.save();
+      context.translate(piece.x, piece.y);
+      context.rotate(piece.rotation);
+      context.fillStyle = piece.color;
+      context.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size * 0.65);
+      context.restore();
     });
-  }
 
-  const start = performance.now();
-  function frame(now) {
-    const t = (now - start) / 1000;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pieces.forEach((p) => {
-      p.life += 1/60;
-      p.vy += 0.35; // gravity
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.vr;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rot);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
-      ctx.restore();
-    });
-    if (t < 1.2) requestAnimationFrame(frame);
-    else { document.body.removeChild(canvas); }
-  }
-  requestAnimationFrame(frame);
-
-  // try play sound if exists
-  try {
-    const sfx = document.getElementById('sfx-correct');
-    if (sfx && typeof sfx.play === 'function') sfx.currentTime = 0, sfx.play().catch(() => {});
-  } catch (_) {}
-}
-
-export function fireSparkles(targetEl, { count = 14, spread = 30, size = 8 } = {}) {
-  if (REDUCED) return;
-  const colors = ['#7c3aed','#a78bfa','#6d28d9','#8b5cf6','#c4b5fd','#6b21a8'];
-  const rect = targetEl ? targetEl.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/3, width: 0, height: 0 };
-  const originX = rect.left + rect.width / 2;
-  const originY = rect.top + rect.height / 2;
-
-  const created = [];
-  for (let i = 0; i < count; i += 1) {
-    const el = document.createElement('div');
-    el.className = 'sparkle';
-    const angle = (Math.PI * 2) * Math.random();
-    const r = Math.random() * spread;
-    const dx = Math.cos(angle) * r;
-    const dy = Math.sin(angle) * r;
-    const left = originX + dx;
-    const top = originY + dy;
-    const s = (size * (0.8 + Math.random() * 0.8)).toFixed(1);
-    el.style.left = `${left}px`;
-    el.style.top = `${top}px`;
-    el.style.width = `${s}px`;
-    el.style.height = `${s}px`;
-    el.style.background = colors[i % colors.length];
-    el.style.transform = `translate(-50%, -50%) scale(${0.6 + Math.random()*0.8}) rotate(${Math.random()*360}deg)`;
-    el.style.opacity = '1';
-    document.body.appendChild(el);
-    created.push(el);
-    // stagger
-    el.style.animationDelay = `${Math.random()*120}ms`;
-  }
-
-  // cleanup after animation
-  window.setTimeout(() => { created.forEach((e) => e.remove()); }, 900);
-
-  // play sound if available
-  try { const sfx = document.getElementById('sfx-correct'); if (sfx && typeof sfx.play === 'function') sfx.currentTime = 0, sfx.play().catch(() => {}); } catch (_) {}
-}
-
-export function showHappyRobotAt(targetEl, { src = 'assets/imagens/robo-feliz.gif', duration = 1100 } = {}) {
-  if (REDUCED) return;
-  const rect = targetEl ? targetEl.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/3, width: 0, height: 0 };
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = 'robo feliz';
-  img.className = 'happy-robot-anim';
-  img.style.position = 'fixed';
-  img.style.left = `${rect.left + rect.width/2}px`;
-  img.style.top = `${rect.top + rect.height/2}px`;
-  img.style.transform = 'translate(-50%, -50%) scale(0.95)';
-  img.style.zIndex = 10000;
-  img.style.pointerEvents = 'none';
-  img.style.width = '140px';
-  img.style.height = '140px';
-  document.body.appendChild(img);
-  // pop in
-  requestAnimationFrame(() => { img.style.transition = 'transform 260ms ease-out, opacity 260ms ease-out'; img.style.transform = 'translate(-50%, -50%) scale(1)'; img.style.opacity = '1'; });
-  window.setTimeout(() => { img.style.opacity = '0'; img.style.transform = 'translate(-50%, -50%) scale(0.8)'; }, duration - 220);
-  window.setTimeout(() => { img.remove(); }, duration);
+    if (elapsed < 1000) window.requestAnimationFrame(draw);
+    else canvas.remove();
+  };
+  window.requestAnimationFrame(draw);
 }
