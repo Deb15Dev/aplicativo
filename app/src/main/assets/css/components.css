@@ -122,8 +122,9 @@
 .modal-base.loss h3 { color: var(--danger); }
 .modal-base p { margin: 0 0 24px; color: var(--text); font-size: 18px; font-weight: 700; }
 .btn-modal-primary, .btn-modal-secondary { width: 100%; min-height: 50px; border-radius: 14px; font-weight: 900; cursor: pointer; }
-.btn-modal-primary { margin-bottom: 12px; border: 0; background: var(--title); color: #fff; }
+.btn-modal-primary { margin-bottom: 12px; border: 0; background: var(--keyboard); color: #fff; }
 .btn-modal-secondary { border: 1px solid var(--border); background: var(--soft); color: var(--purple); }
+.modal-home-icon { width: 20px; height: 20px; margin-right: 6px; vertical-align: -4px; fill: currentColor; }
 
 @keyframes shake { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
 

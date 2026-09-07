@@ -75,8 +75,8 @@ function showScreen(id) {
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.darkMode ? 'dark' : 'light';
-  document.getElementById('logo-home').src = state.darkMode ? 'assets/imagens/logo-techcross-dark.png' : 'assets/imagens/logo-techcross.png';
-  document.getElementById('logo-about').src = state.darkMode ? 'assets/imagens/logo-techcross-dark.png' : 'assets/imagens/logo-techcross.png';
+  document.getElementById('logo-home').src = state.darkMode ? 'imagens/logo-techcross-dark.png' : 'imagens/logo-techcross.png';
+  document.getElementById('logo-about').src = state.darkMode ? 'imagens/logo-techcross-dark.png' : 'imagens/logo-techcross.png';
   const toggle = document.getElementById('btn-tema');
   toggle.classList.toggle('active', state.darkMode);
   toggle.setAttribute('aria-pressed', String(state.darkMode));
@@ -108,6 +108,19 @@ function getCategoryProgress(categoryId = state.activeCategoryId) {
 function getUnlockedLevels(categoryId = state.activeCategoryId) {
   state.unlocked[categoryId] ||= [1];
   return state.unlocked[categoryId];
+}
+
+function updateLevelProgress(level, categoryId = state.activeCategoryId) {
+  if (!level) return;
+  const progressByLevel = getCategoryProgress(categoryId);
+  const total = level.words?.length || 0;
+  if (!total) return;
+  const completed = level.words.filter((w) => wordComplete(w)).length;
+  const pct = Math.round((completed / total) * 100);
+  progressByLevel[level.id] = pct;
+  savePersistentState();
+  // update UI list of levels
+  renderLevels();
 }
 
 function renderCategories() {
@@ -203,6 +216,8 @@ function openLevel(level) {
   state.selectedLetterIndex = null;
   renderGame();
   showScreen('game-screen');
+  // ensure progress bar reflects current answers when opening a level
+  updateLevelProgress(state.currentLevel);
 }
 
 function renderGameHeader() {
@@ -247,6 +262,16 @@ function renderWords() {
       renderGame();
     },
   });
+  // Scroll the selected word into view (centered) after rendering
+  try {
+    const selected = state.selectedWord;
+    if (selected) {
+      const row = area.querySelector(`[data-answer="${selected.answer}"]`);
+      if (row && typeof row.scrollIntoView === 'function') {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      }
+    }
+  } catch (_) {}
 }
 
 function renderKeyboard() {
@@ -301,7 +326,12 @@ function evaluateWord(word) {
     fireConfetti(row);
     const allCompleted = state.currentLevel.words.every((item) => wordComplete(item));
     if (allCompleted) completeLevel();
-    else revealLettersForNextWord(selectNextUnfinished());
+    else {
+      // update progress after completing this word
+      updateLevelProgress(state.currentLevel);
+      const nextWord = selectNextUnfinished();
+      revealLettersForRemainingWords(nextWord);
+    }
     return;
   }
   state.errors += 1;
@@ -334,19 +364,46 @@ function selectNextUnfinished(direction = 1) {
   }
 }
 
-function revealLettersForNextWord(word) {
-  if (!word) return;
-  const answer = answerArray(word);
-  const empty = answer.map((item, index) => item ? null : index).filter((index) => index !== null);
-  for (let index = empty.length - 1; index > 0; index -= 1) {
+function revealLettersForRemainingWords(referenceWord) {
+  if (!referenceWord) return;
+
+  // Keep the same reward size, but distribute its letters among every
+  // unfinished word instead of revealing them all in just the next word.
+  let amount;
+  if (referenceWord.answer.length <= 4) amount = 1;
+  else if (referenceWord.answer.length <= 7) amount = 2;
+  else if (referenceWord.answer.length <= 10) amount = 3;
+  else amount = 4;
+
+  const availableByWord = state.currentLevel.words.map((word) => {
+    if (wordComplete(word)) return [];
+    return answerArray(word)
+      .map((letter, index) => (letter ? null : index))
+      .filter((index) => index !== null);
+  }).map((indexes, wordIndex) => ({ word: state.currentLevel.words[wordIndex], indexes }))
+    .filter(({ indexes }) => indexes.length);
+  if (!availableByWord.length) return;
+
+  // Shuffle the words first. One letter is given to each word before a
+  // second letter can go to the same word, spreading the reward around.
+  for (let index = availableByWord.length - 1; index > 0; index -= 1) {
     const other = Math.floor(Math.random() * (index + 1));
-    [empty[index], empty[other]] = [empty[other], empty[index]];
+    [availableByWord[index], availableByWord[other]] = [availableByWord[other], availableByWord[index]];
   }
-  const amount = word.answer.length <= 4 ? 1 : word.answer.length <= 7 ? 2 : 3;
-  const chosen = empty.slice(0, Math.min(amount, empty.length));
-  chosen.forEach((index) => { answer[index] = word.answer[index]; });
-  state.answers[word.answer] = answer;
-  state.revealed[word.answer] = [...new Set([...(state.revealed[word.answer] || []), ...chosen])];
+
+  let revealedCount = 0;
+  while (revealedCount < amount && availableByWord.length) {
+    const target = availableByWord[revealedCount % availableByWord.length];
+    const randomIndex = Math.floor(Math.random() * target.indexes.length);
+    const [index] = target.indexes.splice(randomIndex, 1);
+    const { word } = target;
+    const answer = answerArray(word);
+    answer[index] = word.answer[index];
+    state.answers[word.answer] = answer;
+    state.revealed[word.answer] = [...new Set([...(state.revealed[word.answer] || []), index])];
+    if (!target.indexes.length) availableByWord.splice(availableByWord.indexOf(target), 1);
+    revealedCount += 1;
+  }
 }
 
 function completeLevel() {
@@ -387,7 +444,14 @@ function showModal(type) {
   icon.textContent = winning ? '🏆' : '😵';
   title.textContent = winning ? 'Parabéns!' : 'Fim de jogo!';
   text.textContent = winning ? 'Você concluiu a fase com sucesso!' : `Você atingiu o limite de erros no modo ${state.difficulty}.`;
-  primary.textContent = winning ? 'PRÓXIMO LEVEL →' : 'RECOMEÇAR DO LEVEL 1';
+  // Use icons and clearer actions: primary -> next/restart, secondary -> go home or back to levels
+  primary.innerHTML = winning ? 'PRÓXIMO LEVEL <span aria-hidden="true">→</span>' : 'RECOMEÇAR DO LEVEL 1';
+  secondary.innerHTML = winning ? '<span aria-hidden="true">🏠</span> VOLTAR AO INÍCIO' : 'VOLTAR ÀS FASES';
+
+  if (winning) {
+    secondary.innerHTML = '<svg class="modal-home-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.7 12 3l9 7.7v9.8a.5.5 0 0 1-.5.5h-5.4v-6.5H8.9V21H3.5a.5.5 0 0 1-.5-.5z" /></svg> VOLTAR AO IN&Iacute;CIO';
+  }
+
   primary.onclick = () => {
     overlay.classList.add('hidden');
     if (!winning) {
@@ -400,10 +464,12 @@ function showModal(type) {
     if (next) openLevel(next);
     else showScreen('levels-screen');
   };
+
   secondary.onclick = () => {
     overlay.classList.add('hidden');
     if (!winning) resetEntireGame();
-    showScreen('levels-screen');
+    // when winning, allow user to return to home; otherwise, go to levels list
+    showScreen(winning ? 'home-screen' : 'levels-screen');
   };
   overlay.classList.remove('hidden');
 }
