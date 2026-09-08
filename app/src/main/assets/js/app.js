@@ -8,6 +8,8 @@ import { fireConfetti } from './componentes/animations.js';
 
 const STORAGE_KEY = 'techcross-web-state-v1';
 const MAX_ERRORS = { facil: 5, medio: 4, dificil: 3 };
+
+//
 const defaultState = () => ({
   musicOn: true,
   darkMode: false,
@@ -474,6 +476,7 @@ function showModal(type) {
   overlay.classList.remove('hidden');
 }
 
+// musica click alterna entre ligar e desligar
 function bindStaticControls() {
   document.querySelectorAll('[data-target]').forEach((button) => button.addEventListener('click', () => showScreen(button.dataset.target)));
   document.getElementById('btn-jogar').addEventListener('click', () => showScreen('levels-screen'));
@@ -502,6 +505,7 @@ function bindStaticControls() {
   document.getElementById('btn-dica-next').addEventListener('click', () => { if (!state.locked) { selectNextUnfinished(1); renderGame(); } });
 }
 
+// musica volume
 function init() {
   loadSavedState();
   bindStaticControls();

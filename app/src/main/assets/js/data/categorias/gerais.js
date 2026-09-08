@@ -1,7 +1,7 @@
 export const LEVELS_GERAIS = [
   {
     id: 1,
-    title: 'Geografia Global',
+    title: ' Global',
     unlocked: true,
     words: [
       { answer: 'EVEREST', hint: 'A montanha mais alta do mundo.' },
@@ -9,7 +9,7 @@ export const LEVELS_GERAIS = [
       { answer: 'ITALIA', hint: 'País que tem o formato de uma bota.' },
       { answer: 'ALEMANHA', hint: 'País onde foi construído o Muro de Berlim.' },
       { answer: 'BELEM', hint: 'Cidade brasileira conhecida por chover quase à mesma hora.' },
-      { answer: 'PAISESBAIXOS', hint: 'País onde se anda mais de bicicleta.' }
+      { answer: 'MAREMOTO', hint: 'Outro nome dado ao fenômeno do tsunami.' },
     ]
   },
   {
@@ -58,7 +58,6 @@ export const LEVELS_GERAIS = [
     words: [
       { answer: 'TIRADENTES', hint: 'O que se comemora no feriado do dia 21 de abril no Brasil.' },
       { answer: 'INDEPENDENCIA', hint: 'Grande evento histórico que aconteceu em 1822 no Brasil.' },
-      { answer: 'MAREMOTO', hint: 'Outro nome dado ao fenômeno do tsunami.' },
       { answer: 'NAPOLEAO', hint: 'Famoso líder histórico de nacionalidade francesa.' },
       { answer: 'OBAMA', hint: 'Sobrenome do ex-presidente dos Estados Unidos.' },
       { answer: 'BELADORMECIDA', hint: 'Conto de fadas onde uma princesa adormece com um feitiço.' }

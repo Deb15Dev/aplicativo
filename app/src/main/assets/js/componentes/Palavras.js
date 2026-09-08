@@ -39,3 +39,4 @@ export function renderWordList(container, {
     container.appendChild(row);
   });
 }
+//limpeza da tela, criação de linhas, geração de caixas de letras e bloqueios dos levels locked.
